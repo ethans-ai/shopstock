@@ -3,7 +3,7 @@
 #
 # Prereqs:
 #   1. Node.js LTS installed (https://nodejs.org)
-#   2. nssm.exe available (https://nssm.cc — single exe, put it in C:\tools\nssm or on PATH)
+#   2. nssm.exe available (https://nssm.cc - single exe, put it in C:\tools\nssm or on PATH)
 #   3. `npm ci` run in the project folder
 #
 # Usage: .\install-service.ps1 [-Port 8340] [-NssmPath C:\tools\nssm\nssm.exe]
@@ -38,4 +38,7 @@ New-NetFirewallRule -DisplayName "ShopStock ($Port)" -Direction Inbound `
 
 Write-Host ""
 Write-Host "Service installed and started. Check http://localhost:$Port"
-Write-Host "IMPORTANT: set the Base URL on /admin to this PC's LAN IP before printing labels."
+Write-Host "IMPORTANT for LAN access:"
+Write-Host "  1. Set ""bindHost"": ""0.0.0.0"" in config.json and restart the service -"
+Write-Host "     the default 127.0.0.1 only serves this PC."
+Write-Host "  2. Set the Base URL on /admin to this PC's LAN IP before printing QR labels."

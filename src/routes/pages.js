@@ -17,8 +17,14 @@ router.get('/', (req, res) => {
 });
 
 router.get('/search', (req, res) => {
-  const q = (req.query.q || '').trim();
+  let q = (req.query.q || '').trim();
   if (!q) return res.redirect('/');
+
+  // A scanner reading a legacy QR label types the full URL — extract its code
+  // (this also covers scans landing in the autofocused search box, where the
+  // client-side wedge deliberately stays out of the way)
+  const urlMatch = q.match(/\/(i|l)\/([A-Za-z0-9]{4,8})$/);
+  if (urlMatch) q = urlMatch[2];
 
   // A typed-in shortcode goes straight to the thing
   const codeHit = search.byShortcode(q);

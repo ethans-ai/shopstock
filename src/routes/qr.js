@@ -25,6 +25,14 @@ router.get('/l/:code', (req, res) => {
   res.status(404).render('scan-miss', { title: 'Code not found', code });
 });
 
+router.get('/barcode/:code.svg', (req, res, next) => {
+  try {
+    const code = req.params.code.toUpperCase();
+    if (!/^[A-Z0-9]{1,16}$/.test(code)) return res.status(400).send('bad code');
+    res.type('image/svg+xml').send(require('../services/barcode').svgForCode(code));
+  } catch (err) { next(err); }
+});
+
 router.get('/qr/:code.svg', async (req, res, next) => {
   try {
     const code = req.params.code.toUpperCase();

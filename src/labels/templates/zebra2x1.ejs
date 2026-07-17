@@ -10,17 +10,24 @@
   .label {
     width: 2in; height: 1in;
     padding: 0.06in 0.08in;
-    display: flex; align-items: center; gap: 0.08in;
     overflow: hidden;
     page-break-after: always;
   }
-  .qr { width: 0.82in; height: 0.82in; flex: 0 0 auto; }
-  .qr svg { width: 100%; height: 100%; }
-  .txt { min-width: 0; }
-  .name {
+  .label.qr { display: flex; align-items: center; gap: 0.08in; }
+  .label.qr .code-img { width: 0.82in; height: 0.82in; flex: 0 0 auto; }
+  .label.qr .name {
     font-size: 8pt; font-weight: bold; line-height: 1.15;
     display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
   }
+  .label.c128 { display: flex; flex-direction: column; justify-content: space-between; }
+  .label.c128 .code-img { width: 100%; height: 0.34in; }
+  .label.c128 .name {
+    font-size: 7.5pt; font-weight: bold; line-height: 1.1;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .label.c128 .bottom { display: flex; gap: 0.06in; align-items: baseline; }
+  .code-img svg { width: 100%; height: 100%; }
+  .txt { min-width: 0; }
   .sub { font-size: 6pt; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .code { font-size: 7.5pt; font-family: Consolas, monospace; letter-spacing: 0.06em; }
   .print-note { padding: 8px; background: #ffec9e; font-size: 14px; }
@@ -30,18 +37,29 @@
 <body>
 <div class="print-note">
   Zebra 2"×1" thermal · print at <strong>100% scale, margins: none</strong>.
-  <% if (!baseUrlSet) { %><strong style="color:#b00">⚠️ Base URL not set!</strong><% } %>
+  <% if (sym === 'qr' && !baseUrlSet) { %><strong style="color:#b00">⚠️ Base URL not set!</strong><% } %>
   <button onclick="print()">Print</button>
 </div>
 <% for (const l of labels) { %>
-  <div class="label">
-    <div class="qr"><%- l.qrSvg %></div>
-    <div class="txt">
+  <% if (sym === 'c128') { %>
+    <div class="label c128">
       <div class="name"><%= l.name %></div>
-      <div class="code"><%= l.code %></div>
-      <% if (l.sub) { %><div class="sub"><%= l.sub %></div><% } %>
+      <div class="code-img"><%- l.codeSvg %></div>
+      <div class="bottom">
+        <span class="code"><%= l.code %></span>
+        <% if (l.sub) { %><span class="sub"><%= l.sub %></span><% } %>
+      </div>
     </div>
-  </div>
+  <% } else { %>
+    <div class="label qr">
+      <div class="code-img"><%- l.codeSvg %></div>
+      <div class="txt">
+        <div class="name"><%= l.name %></div>
+        <div class="code"><%= l.code %></div>
+        <% if (l.sub) { %><div class="sub"><%= l.sub %></div><% } %>
+      </div>
+    </div>
+  <% } %>
 <% } %>
 </body>
 </html>

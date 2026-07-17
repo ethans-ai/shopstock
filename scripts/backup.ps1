@@ -14,11 +14,14 @@ $root = Resolve-Path "$PSScriptRoot\.."
 $stamp = Get-Date -Format 'yyyy-MM-dd_HHmm'
 $work = Join-Path $env:TEMP "shopstock-backup-$stamp"
 
+# Portable bundle ships its own node.exe at the project root; fall back to PATH
+$nodeCmd = if (Test-Path (Join-Path $root 'node.exe')) { Join-Path $root 'node.exe' } else { 'node' }
+
 New-Item -ItemType Directory -Force $work | Out-Null
 New-Item -ItemType Directory -Force $Dest | Out-Null
 
 # Consistent DB snapshot through better-sqlite3's backup API
-node -e "
+& $nodeCmd -e "
 const Database = require('$($root -replace '\\','/')/node_modules/better-sqlite3');
 const db = new Database('$($root -replace '\\','/')/data/shopstock.db', { readonly: true });
 db.backup('$($work -replace '\\','/')/shopstock.db').then(() => {
@@ -28,7 +31,7 @@ db.backup('$($work -replace '\\','/')/shopstock.db').then(() => {
 "
 if ($LASTEXITCODE -ne 0) { throw "DB snapshot failed" }
 
-# Photos are plain files — safe to copy directly
+# Photos are plain files - safe to copy directly
 robocopy (Join-Path $root 'data\photos') (Join-Path $work 'photos') /E /NFL /NDL /NJH /NJS | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "robocopy failed with code $LASTEXITCODE" }
 

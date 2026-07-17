@@ -56,8 +56,13 @@ function escapeHtml(s) {
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-app.listen(cfg.port, '0.0.0.0', () => {
-  console.log(`ShopStock running on port ${cfg.port}`);
+app.listen(cfg.port, cfg.bindHost, () => {
+  console.log(`ShopStock running at http://localhost:${cfg.port}`);
+  if (cfg.bindHost === '127.0.0.1' || cfg.bindHost === 'localhost') {
+    console.log('Single-station mode: only this PC can reach the app (bindHost = 127.0.0.1).');
+    return;
+  }
+  console.log(`Serving on the network (bindHost = ${cfg.bindHost}).`);
   if (!cfg.baseUrl) {
     console.warn('WARNING: baseUrl is not set in config.json — QR labels will not work until it is.');
     const nets = os.networkInterfaces();

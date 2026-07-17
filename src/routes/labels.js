@@ -3,6 +3,7 @@ const path = require('path');
 const items = require('../services/items');
 const locations = require('../services/locations');
 const qr = require('../services/qr');
+const barcode = require('../services/barcode');
 const config = require('../config');
 
 const router = express.Router();
@@ -29,6 +30,9 @@ router.get('/labels/print', async (req, res, next) => {
     const cfg = config.load();
     const template = TEMPLATES[req.query.template] ? req.query.template : 'avery5160';
     const start = Math.max(0, parseInt(req.query.start, 10) || 0);
+    // 'c128' = Code 128 barcode for USB scanners (single-station mode),
+    // 'qr' = QR code URL for phone cameras (LAN mode)
+    const sym = req.query.sym === 'qr' ? 'qr' : 'c128';
 
     const targets = [];
     if (req.query.ids) {
@@ -66,9 +70,11 @@ router.get('/labels/print', async (req, res, next) => {
     const base = cfg.baseUrl || `http://localhost:${cfg.port}`;
     const labels = [];
     for (const t of targets) {
-      const url = qr.urlFor(base, t.kind, t.row.shortcode);
+      const codeSvg = sym === 'qr'
+        ? await qr.svgForUrl(qr.urlFor(base, t.kind, t.row.shortcode))
+        : barcode.svgForCode(t.row.shortcode);
       labels.push({
-        qrSvg: await qr.svgForUrl(url),
+        codeSvg,
         name: t.row.name,
         code: t.row.shortcode,
         sub: t.kind === 'item'
@@ -78,7 +84,7 @@ router.get('/labels/print', async (req, res, next) => {
     }
 
     res.render(path.join('..', 'labels', 'templates', template), {
-      labels, start, baseUrlSet: !!cfg.baseUrl
+      labels, start, sym, baseUrlSet: !!cfg.baseUrl
     });
   } catch (err) { next(err); }
 });

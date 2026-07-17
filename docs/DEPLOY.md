@@ -1,73 +1,106 @@
-# Deploying ShopStock to the work PC
+# Deploying ShopStock
 
-## Prerequisites
-1. **Node.js 22 LTS** — install from https://nodejs.org (MSI, default options).
-2. **NSSM** — download from https://nssm.cc, put `nssm.exe` somewhere permanent
-   (e.g. `C:\tools\nssm\nssm.exe`). It wraps the app as a real Windows service.
-3. **A stable address for the PC.** Ask IT for a **static IP or DHCP reservation**
-   before printing any labels — the printed QR codes contain this address forever.
+Two deployment modes. **Single-station is the default** and needs no admin
+rights, no firewall changes, and no IT involvement.
 
-## Install
+---
+
+## Mode 1 — Single-station lab PC (default)
+
+One PC in the lab runs everything. A USB barcode scanner is the input device.
+The server binds to `127.0.0.1`, so nothing is reachable from the network.
+
+### Option A: portable bundle (recommended for locked-down PCs)
+
+On any Windows x64 machine where the app runs (e.g. your dev machine):
+
 ```powershell
-# 1. Copy the project folder to the work PC (e.g. C:\shopstock), then:
-cd C:\shopstock
-npm ci
-
-# 2. First run, by hand, to check it works:
-node server.js
-# → browse http://localhost:8340
+powershell -ExecutionPolicy Bypass -File scripts\make-portable.ps1
 ```
 
-## Configure
-- Open `http://localhost:8340/admin` and set the **Base URL** to the PC's LAN
-  address, e.g. `http://192.168.1.50:8340`. This is what QR codes encode.
-- Port/data directory can be overridden in `config.json` (copy `config.example.json`).
+Copy `shopstock-portable.zip` to the lab PC (USB stick works), unzip anywhere —
+`C:\shopstock`, a user folder, wherever you have write access — and double-click
+**`start.cmd`**. That's it: the bundle carries its own `node.exe`, so the target
+PC needs **no installs and no internet, ever**.
 
-## Install as a service + firewall rule
-Run **elevated** PowerShell:
-```powershell
-cd C:\shopstock
-.\scripts\install-service.ps1 -NssmPath C:\tools\nssm\nssm.exe
+### Option B: normal install (if you can install Node and reach npm)
+
+1. Install Node.js LTS from https://nodejs.org. (The zip/portable Node build also
+   works without admin, but it does NOT add itself to PATH — you'd have to add its
+   folder to your user PATH first. If you're reaching for the zip because installs
+   are blocked, the portable bundle in Option A is the better answer.)
+2. ```powershell
+   git clone https://github.com/ethans-ai/shopstock   # or copy the folder
+   cd shopstock        # <- npm MUST run inside the project folder
+   npm install
+   ```
+3. Double-click `scripts\start-shopstock.cmd`.
+
+> **The errors you get if you skip `cd`:** npm EPERM on
+> `C:\WINDOWS\system32\package-lock.json`, "Cannot find module
+> ...system32\scripts\seed-demo.js", ENOENT package.json — all mean the shell's
+> working directory is not the project folder.
+
+### Auto-start at login (no admin)
+
+Win+R → `shell:startup` → Enter, then put a shortcut to `start.cmd` (portable)
+or `scripts\start-shopstock.cmd` (normal install) in that folder. The launcher
+is idempotent — if the server is already running it just opens the browser.
+
+### Barcode scanner
+
+Plug in any USB HID ("keyboard wedge") scanner. Defaults are almost always
+right: it types the code and sends Enter. Scan from any page in the app — it
+jumps to the scanned item/location. Print labels from `/labels` with code type
+**Barcode (Code 128)**. Run the ruler calibration page (`/admin`) once per
+printer before a big label batch.
+
+### Backups (still worth doing on a single PC)
+
+Schedule daily in Task Scheduler (works per-user, no admin):
+
 ```
-This installs a `ShopStock` service (delayed auto-start, restart-on-crash, logs to
-`data\service.log`) and opens inbound TCP 8340 on the Domain/Private firewall profiles.
-
-## Day-one reachability test (do this BEFORE printing labels)
-1. From another PC: browse `http://<work-pc-ip>:8340` — should load.
-2. From a phone on the shop Wi-Fi: same URL — should load.
-   - If the PC works but the phone doesn't: the phone is probably on a guest VLAN
-     or the Wi-Fi has client isolation. Talk to IT — **this must work** or the
-     whole QR workflow is dead on arrival.
-   - Also check the PC's network profile is Domain or Private (Public blocks
-     inbound): `Get-NetConnectionProfile`.
-
-## Label printing calibration
-1. Open `/admin` → "Open ruler test page" → print at **100% scale**.
-2. Check with a real ruler. If dimensions are off, fix the print dialog scaling
-   (turn off "fit to page") before printing labels.
-3. Avery 5160 sheets work on any office laser printer — good starting point.
-   Dymo/Zebra roll templates are in the Labels page dropdown once you know the printer.
-
-## Backups
-Schedule the backup script daily in Task Scheduler:
+Program:   powershell
+Arguments: -NoProfile -ExecutionPolicy Bypass -File C:\shopstock\scripts\backup.ps1 -Dest "D:\shopstock-backups"
 ```
-Program:  powershell
-Arguments: -NoProfile -ExecutionPolicy Bypass -File C:\shopstock\scripts\backup.ps1 -Dest "\\fileserver\share\shopstock-backups"
-```
-- The script snapshots the DB through the SQLite backup API (safe while the
-  service runs — never just copy `shopstock.db` while live) and zips the photos.
-- Keeps 30 days by default (`-KeepDays`).
 
-**Restore:** stop the service (`nssm stop ShopStock`), unzip the backup over the
-`data\` folder, start the service.
+Point `-Dest` at a network share or second drive if available. The script uses
+the SQLite backup API (safe while the app runs) and zips photos alongside.
+
+**Restore:** stop the server, then **delete `data\shopstock.db`, `data\shopstock.db-wal`,
+and `data\shopstock.db-shm`** (a stale `-wal` file left in place would be replayed
+into the restored database and corrupt it), unzip the backup into `data\`, start again.
+
+---
+
+## Mode 2 — LAN server (phones + QR labels)
+
+Only if/when IT is on board. Needs an inbound firewall rule and a static
+IP/DHCP reservation **before printing QR labels** (printed URLs are permanent).
+
+1. **Set `"bindHost": "0.0.0.0"` in `config.json`** and restart the server —
+   without this the server only listens on 127.0.0.1 and no other device can
+   connect, no matter what the firewall allows.
+2. `New-NetFirewallRule -DisplayName "ShopStock" -Direction Inbound -LocalPort 8340 -Protocol TCP -Action Allow -Profile Domain,Private` (elevated)
+3. Set the Base URL on `/admin` to `http://<static-ip>:8340`.
+4. Install as a service so it survives reboots: `scripts\install-service.ps1`
+   (uses NSSM, elevated).
+5. Test phone → PC reachability before printing labels. If it fails, check
+   bindHost first (step 1), then corporate Wi-Fi client isolation / guest VLAN.
+6. Print QR labels (code type dropdown on `/labels`). Phones scan with the
+   native camera app — no app install needed.
+
+Both modes can coexist: a LAN deployment still works with the USB scanner, and
+2D scanners read the QR labels too.
+
+---
 
 ## Maintenance notes
-- **Don't upgrade Node casually** — `better-sqlite3` and `sharp` are native
-  modules built for the installed Node version. If you must upgrade Node, run
-  `npm rebuild` afterwards.
-- Logs: `data\service.log` / `data\service-error.log` (rotated at 1 MB).
-- The whole system state is the `data\` folder. Everything else is code.
 
-## Reset to empty (fresh start after testing)
-Stop the server, delete `data\shopstock.db*` and `data\photos\*`, start again —
-migrations recreate an empty database. `node scripts/seed-demo.js` loads demo data.
+- **Don't upgrade Node casually** — `better-sqlite3` and `sharp` are native
+  modules built per Node version. After a Node upgrade run `npm rebuild`.
+  (The portable bundle is immune: its runtime is pinned inside the zip.)
+- All state is the `data\` folder (DB + photos). Code is stateless.
+- Reset to empty: stop server, delete `data\shopstock.db*` and `data\photos\*`,
+  start again. `node scripts/seed-demo.js` (or `seed-demo.cmd` in the portable
+  bundle) loads demo data into an empty DB.
