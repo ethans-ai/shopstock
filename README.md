@@ -88,6 +88,6 @@ src/routes/            pages, mutations, JSON api, labels, code redirects
 src/views/             EJS pages
 src/labels/templates/  label print templates (@page-sized, barcode + QR layouts)
 public/                static css/js (htmx vendored)
-scripts/               seed, launcher, portable bundle, backup, service install
+scripts/               seed, launcher, portable bundle, backup + restore, service install
 data/                  THE state: shopstock.db + photos/   (gitignored)
 ```
