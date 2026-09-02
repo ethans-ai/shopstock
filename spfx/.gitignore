@@ -1,0 +1,32 @@
+# SPFx build output — the .sppkg is a build artifact, rebuilt from source
+logs
+*.log
+npm-debug.log*
+node_modules
+dist
+lib
+lib-dts
+lib-commonjs
+lib-esm
+jest-output
+release
+solution
+temp
+*.sppkg
+.heft
+coverage
+.DS_Store
+.vs
+bin
+obj
+*.resx.ts
+*.scss.ts
+
+# The repo root ignores config.json (that is the app's runtime config, written
+# by /admin). This one is SPFx build configuration and must be tracked.
+!config/config.json
+
+# The prebuilt package is committed on purpose so the .sppkg can be installed
+# without a full SPFx toolchain install — see docs/SHAREPOINT.md.
+!prebuilt/
+!prebuilt/*.sppkg

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "shop-stock-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/shopStock/ShopStockWebPart.js",
+          "manifest": "./src/webparts/shopStock/ShopStockWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "ShopStockWebPartStrings": "lib/webparts/shopStock/loc/{locale}.js"
+  }
+}

@@ -64,6 +64,9 @@ src/labels/templates/  label sheet layouts (Avery 5160, Dymo 30252/30334, Zebra 
 src/migrations/        001_init, 002_vendor_links, 003_backup_runs
 scripts/               make-portable.ps1, backup.ps1, restore.ps1,
                        install-service.ps1, start-shopstock.cmd, seed-demo.js
+spfx/                  SharePoint Framework solution -> shopstock.sppkg
+                       (a web part that embeds/links the running app; nothing
+                       of the server can run on SharePoint - docs/SHAREPOINT.md)
 ```
 
 ## Conventions
@@ -103,6 +106,11 @@ scripts/               make-portable.ps1, backup.ps1, restore.ps1,
 - **Never copy `shopstock.db` alone.** A stale `data/shopstock.db-wal` next to a
   restored database gets replayed into it and corrupts it. Move `data/` as a
   whole, or use `scripts/restore.ps1`, which handles this.
+- **`spfx/` is a separate toolchain.** It pins Node 22 (SPFx 1.23.2's supported
+  range) while the app runs on Node 24, has its own `node_modules`, and is not
+  staged by `make-portable.ps1` — so it never reaches the shop PC. Its
+  `.gitignore` re-includes `config/config.json`, which the repo root ignores for
+  the app's own runtime config.
 - **`better-sqlite3` and `sharp` are native modules** built per Node version.
   After a Node upgrade, `npm rebuild`. The portable bundle is immune — its
   runtime is pinned inside the zip.

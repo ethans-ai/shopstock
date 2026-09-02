@@ -141,6 +141,20 @@ Both modes can coexist: a LAN deployment still works with the USB scanner, and
 
 ---
 
+## Finding it from SharePoint (optional)
+
+ShopStock cannot *run* on SharePoint — a `.sppkg` holds browser-side files
+only, and there is no Node or SQLite on a SharePoint site. What can be
+installed there is a web part that embeds or links to the app running on the
+shop PC, so people find ShopStock from the team site instead of a bookmark.
+
+Built from `spfx\`; see `docs/SHAREPOINT.md` for the build, the App Catalog
+upload and the per-site install. Note up front that an embedded frame only
+loads for the person at the shop PC unless ShopStock is in LAN mode behind
+HTTPS — the link-out mode works for everyone either way.
+
+---
+
 ## Maintenance notes
 
 - **Don't upgrade Node casually** — `better-sqlite3` and `sharp` are native

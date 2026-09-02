@@ -1,0 +1,52 @@
+.shopStock {
+  color: "[theme:bodyText, default: #323130]";
+  color: var(--bodyText);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 0 8px 0;
+  font-size: 12px;
+}
+
+.address {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.frame {
+  width: 100%;
+  border: 1px solid "[theme:neutralLight, default: #edebe9]";
+  border-radius: 4px;
+  background: "[theme:white, default: #ffffff]";
+}
+
+.notice {
+  padding: 16px;
+  border: 1px solid "[theme:neutralLight, default: #edebe9]";
+  border-radius: 4px;
+}
+
+.notice h3 {
+  margin: 0 0 8px 0;
+}
+
+.notice p {
+  margin: 0 0 8px 0;
+}
+
+.link {
+  text-decoration: none;
+  color: "[theme:link, default: #03787c]";
+  color: var(--link);
+}
+
+.link:hover {
+  text-decoration: underline;
+  color: "[theme:linkHovered, default: #014446]";
+  color: var(--linkHovered);
+}

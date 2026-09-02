@@ -1,0 +1,40 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "ShopStock",
+    "id": "dc1404cd-06e2-4582-9aeb-abe241aaf94b",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": false,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "ShopStock",
+      "websiteUrl": "https://github.com/ethans-ai/shopstock",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": ""
+    },
+    "metadata": {
+      "shortDescription": {
+        "default": "Opens the shop's ShopStock parts inventory app from a SharePoint page."
+      },
+      "longDescription": {
+        "default": "ShopStock runs on the lab PC. This package adds a web part that embeds that running app in a SharePoint page, or links out to it when the browser will not frame it."
+      },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "ShopStock web part",
+        "description": "Adds the ShopStock web part to the site.",
+        "id": "14cdbc25-617e-4f2b-9d1e-31544a0966fa",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/shopstock.sppkg"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "d2c2fdf3-1cc7-413d-ae70-e33c1e63c04d",
+  "alias": "ShopStockWebPart",
+  "componentType": "WebPart",
+
+  "version": "*",
+  "manifestVersion": 2,
+
+  // The web part frames a URL the page author types; it never injects script into
+  // the hosting page, so it does not need the site's custom-script capability.
+  "requiresCustomScript": false,
+  "supportedHosts": ["SharePointWebPart", "SharePointFullPage"],
+  "supportsThemeVariants": true,
+
+  "preconfiguredEntries": [{
+    "groupId": "5c03119e-3074-46fd-976b-c60198311f70",
+    "group": { "default": "Advanced" },
+    "title": { "default": "ShopStock" },
+    "description": { "default": "Embeds the ShopStock parts inventory app running on the lab PC." },
+    "officeFabricIconFontName": "Product",
+    "properties": {
+      "appUrl": "",
+      "startPath": "/",
+      "height": 800,
+      "linkOnly": false
+    }
+  }]
+}
